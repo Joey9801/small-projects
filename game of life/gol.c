@@ -2,6 +2,7 @@
 #include <memory.h>     /*memcpy()*/
 #include <stdlib.h>     /*srand(), rand()*/
 #include <time.h>       /*clock(), nanosleep()*/
+#include <signal.h>     /*signal()*/
 
 //Game dimensions
 #define W 100
@@ -13,9 +14,14 @@ void iterate(char grid[H][W], char buff[H][W]);
 char count(char grid[H][W], int x, int y);
 void init_rand(char grid[H][W]);
 void msleep(double s_time);
+void int_handler(int sig);
+
+char running = 1;
 
 int main(void){
+    
     initscr(); //start curses mode
+    signal(SIGINT, int_handler);
     
     int h, w;
     clear();
@@ -34,7 +40,7 @@ int main(void){
     double elapsed;
     
     disp(grid);
-    while(1){
+    while(running){
         t1 = clock();
         elapsed = 0;
         iterate(grid, buff);
@@ -46,8 +52,8 @@ int main(void){
         if(elapsed < T_PER_FRAME) 
             msleep(T_PER_FRAME-elapsed);
     }
-
-    endwin();			/* End curses mode		  */
+    endwin();
+    printf("SIGINT caught, exiting\n");
     return 0;
 }
 void disp(char grid[H][W]){
@@ -120,3 +126,9 @@ void msleep(double s_time){
     nanosleep(&req, (struct timespec *)NULL);
     return;
 }
+
+void int_handler(int sig){
+    running = 0;
+    return;
+}
+    
